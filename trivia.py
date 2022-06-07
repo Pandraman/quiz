@@ -1,4 +1,4 @@
-import json
+
 import pygame,random
 def AddLB(LB,Name,P):
     v = len(LB)-1
@@ -10,16 +10,18 @@ def AddLB(LB,Name,P):
     if P > LB[v][1]:
         LB.insert(v,[Name,P])
         LB.pop(len(LB)-1)
+    while len(Scoreboard)-1>10:
+        Scoreboard.pop()
     return LB
 ## trivia game
 # get text
 pygame.init()
-FONT = pygame.font.SysFont('comicsans', 30)
+FONT = pygame.font.Font('font.ttf', 20)
 
 
 # setup WIn
-WIDTH, HEIGHT = 1080,720
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+WIDTH, HEIGHT = 1600,900
+WIN = pygame.display.set_mode((WIDTH, HEIGHT),pygame.FULLSCREEN)
 pygame.display.set_caption("Trivia")
 
 # draw a question x on the screen
@@ -28,8 +30,6 @@ def draw_text(text, font, color, surface, x, y):
     textrect = textobj.get_rect()
     textrect.topleft = (x-textobj.get_width()/2, y-textobj.get_height()/2)
     surface.blit(textobj, (x-textobj.get_width()/2, y-textobj.get_height()/2))
-
-questions = []
 
 class Button():
     def __init__(self, text, x, y, width, height, inactive_color, active_color, function=None, id=None, right=None):
@@ -66,45 +66,49 @@ class Button():
     
 import json
 from q import A as QUESTIONS
-questions = []
-answers = []
-right = []
 n = []
-for i in range(len(QUESTIONS)-1):
-    n.append(i)
-for i in range(5):
-    r = random.choice(n)
-    n.remove(r)
-    questions.append(QUESTIONS[r][0])
-    answers.append(QUESTIONS[r][1])
-    right.append(QUESTIONS[r][2])
+r = random.randint(0,len(QUESTIONS)-1)
 
 
 
 
 Scoreboard = [["",0],["",-1],["",-1],["",-1],["",-1],["",-1],["",-1],["",-1],["",-1],["",-1]]
 q = 0
-b1 = Button(answers[q][0], WIDTH/2-200, HEIGHT/2+100, 200, 50, (255, 208, 0), (0, 0, 255), None, 0, right[q])
-b2 = Button(answers[q][1], WIDTH/2-200, HEIGHT/2-100, 200, 50, (255, 16, 0), (0, 0, 255), None, 1, right[q])
-b3 = Button(answers[q][2], WIDTH/2+200, HEIGHT/2+100, 200, 50, (0, 157, 255), (0, 0, 255), None, 2, right[q])
-b4 = Button(answers[q][3], WIDTH/2+200, HEIGHT/2-100, 200, 50, (0, 255, 46), (0, 0, 255), None, 3, right[q])
 Name = ""
 n = True
 A = 0
 Punkte = 0
 C = pygame.time.Clock()
-N = len(right)
 Played = False
 L = False
 PL = True
 LGCHARS = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9"," ","-","_",".",",","?","!",":",";","(",")","[","]","{","}","/","\\","|","@","#","$","%","^","&","*","+","=","<",">","~","`","'"," ","ß"]
+N = 8
+TOA = 8
+
+def gen_q(i,QUESTIONSS,j=None):
+    i = random.randint(0,len(QUESTIONS)-1)
+    b1 = Button(QUESTIONS[i][1][0], WIDTH/2-200, HEIGHT/2+100, 200, 50, (255, 208, 0), (0, 0, 255), None, 0, QUESTIONS[i][2])
+    b2 = Button(QUESTIONS[i][1][1], WIDTH/2-200, HEIGHT/2-100, 200, 50, (255, 16, 0), (0, 0, 255), None, 1, QUESTIONS[i][2])
+    b3 = Button(QUESTIONS[i][1][2],WIDTH/2+200, HEIGHT/2+100, 200, 50, (0, 157, 255), (0, 0, 255), None, 2, QUESTIONS[i][2])
+    b4 = Button(QUESTIONS[i][1][3], WIDTH/2+200, HEIGHT/2-100, 200, 50, (0, 255, 46), (0, 0, 255), None, 3, QUESTIONS[i][2])
+    q = QUESTIONS[i][0]
+    a = QUESTIONS[i][1]
+    r = QUESTIONS[i][2]
+    
+    
+    return b1,b2,b3,b4,q,a,r,QUESTIONSS
+b1,b2,b3,b4,question,answer,right,QUESTIONSS = gen_q(0,[],True)
+
+
+
 while True:
     C.tick(60)
     
     A = 0
-    if N < len(right):
+    if N < TOA:
         if PL:
-            Punkte = -100
+            Punkte = 0
             print("")
         PL = False
         L = False
@@ -115,7 +119,7 @@ while True:
         b3.draw()
         b4.draw()
         try:
-            draw_text(questions[q], FONT, (255,255,255), WIN, WIDTH/2, HEIGHT/2)
+            draw_text(question, FONT, (255,255,255), WIN, WIDTH/2, HEIGHT/2)
             draw_text("Punkte: " + str(int(Punkte)), FONT, (255, 255, 255), WIN, WIDTH/2, HEIGHT/8)
             n = True
         except:
@@ -124,54 +128,42 @@ while True:
         if b1.a == 1 or b2.a == 1 or b3.a == 1 or b4.a == 1:
             if n:
                 try:
+                    r = random.randint(0,len(QUESTIONS)-1)
                     N += 1
                     pygame.mouse.set_pos(WIDTH/2, HEIGHT/2)
-                    q += 1
                     Punkte += 100
-                    b1 = Button(answers[q][0], WIDTH/2-200, HEIGHT/2+100, 200, 50, (255, 208, 0), (255, 255, 255), None, 0, right[q])
-                    b2 = Button(answers[q][1], WIDTH/2-200, HEIGHT/2-100, 200, 50, (255, 16, 0), (255, 255, 255), None, 1, right[q])
-                    b3 = Button(answers[q][2], WIDTH/2+200, HEIGHT/2+100, 200, 50, (0, 157, 255), (255, 255, 255), None, 2, right[q])
-                    b4 = Button(answers[q][3], WIDTH/2+200, HEIGHT/2-100, 200, 50, (0, 255, 46), (255, 255, 255), None, 3, right[q])
+                    b1,b2,b3,b4,question,answer,right,QUESTIONSS = gen_q(0,QUESTIONSS,True)                   
+                    q += 1
                     b1.a = 0
                     b2.a = 0
                     b3.a = 0
                     b4.a = 0
                 except:
-                    pass
+                    pygame.mouse.set_pos(WIDTH/2, HEIGHT/2)
         if b1.a == -1 or b2.a == -1 or b3.a == -1 or b4.a == -1:
             if n:
 
                 try:
+                    r = random.randint(0,len(QUESTIONS)-1)
                     N += 1
                     pygame.mouse.set_pos(WIDTH/2, HEIGHT/2)
+                    b1,b2,b3,b4,question,answer,right,QUESTIONSS = gen_q(0,QUESTIONSS,True)    
                     q += 1
-                    b1 = Button(answers[q][0], WIDTH/2-200, HEIGHT/2+100, 200, 50, (255, 208, 0), (255, 255, 255), None, 0, right[q])
-                    b2 = Button(answers[q][1], WIDTH/2-200, HEIGHT/2-100, 200, 50, (255, 16, 0),  (255, 255, 255), None, 1, right[q])
-                    b3 = Button(answers[q][2], WIDTH/2+200, HEIGHT/2+100, 200, 50, (0, 157, 255), (255, 255, 255), None, 2, right[q])
-                    b4 = Button(answers[q][3], WIDTH/2+200, HEIGHT/2-100, 200, 50, (0, 255, 46),  (255, 255, 255), None, 3, right[q])
                     b1.a = 0
                     b2.a = 0
                     b3.a = 0
                     b4.a = 0
                 except:
-                    pass
+                    pygame.mouse.set_pos(WIDTH/2, HEIGHT/2)
             else:
                 WIN.fill((25,25,30))
                 draw_text("Punkte: " + str(int(Punkte)), FONT, (255, 255, 255), WIN, WIDTH/2, HEIGHT/10)
-    
+        
     else:
-        questions = []
-        answers = []
-        right = []
-        n = []
-        for i in range(len(QUESTIONS)-1):
-            n.append(i)
+
+
         for i in range(5):
-            r = random.choice(n)
-            n.remove(r)
-            questions.append(QUESTIONS[r][0])
-            answers.append(QUESTIONS[r][1])
-            right.append(QUESTIONS[r][2])
+            r = random.randint(0,len(QUESTIONS)-1)
         if not L:
             Scoreboard = AddLB(Scoreboard,Name,int(Punkte))
             Name = ""
@@ -180,14 +172,14 @@ while True:
         pygame.draw.rect(WIN,(20,20,20),(0,0,WIDTH//3,HEIGHT))
         pygame.draw.rect(WIN,(50,255,50),(-1,-1,WIDTH//3,HEIGHT+2),1)
         Punkte = -100
-        for i in range(len(Scoreboard)):#
+        for i in range(10):#
             if not Scoreboard[i][0] == "":
                 #draw_text(str(i+1) + ". " + Scoreboard[i][0] + " - " + str(Scoreboard[i][1]), FONT, (255, 255, 255), WIN, 20, 50+i*50)
                 WIN.blit(FONT.render((str(i+1) + ". " + Scoreboard[i][0] + " - " + str(Scoreboard[i][1])), False, (255, 255, 255)), (10, 50+i*50))
             else:
                 WIN.blit(FONT.render((str(i+1) + ". "), False, (255, 255, 255)), (10, 50+i*50))
         m = FONT.render(Name+"|",False,(255,255,255))
-        M = FONT.render("________________",False,(255,255,255))
+        M = FONT.render("______________________________",False,(255,255,255))
         WIN.blit(M,(WIDTH//2-M.get_width()//2,HEIGHT//3-M.get_height()//2))
         WIN.blit(m,(WIDTH//2-M.get_width()//2,HEIGHT//3-M.get_height()//2))
         BT = Button("Starten",WIDTH//2,HEIGHT//2,200,50,(255,255,255),(200,200,200),None,0,0)
@@ -200,12 +192,12 @@ while True:
         
         if BT.a == 1 and len(Name) >= 1:
             N = 0
+            while QUESTIONS != QUESTIONSS: QUESTIONSS = QUESTIONS
             q = 0
             BT.a = 0
             Played = True
             b = 9
-
-
+            b1,b2,b3,b4,question,answer,right,QUESTIONSS = gen_q(0,[],True)
 
 
     for event in pygame.event.get():
@@ -213,12 +205,12 @@ while True:
             pygame.quit()
             quit()
         if event.type == pygame.KEYDOWN:
-            if not N < len(right):
+            if not N < TOA:
                 if event.key == pygame.K_BACKSPACE:
                     Name = Name[:-1]
                 else:
                     
-                    if event.unicode in LGCHARS and len(Name) < 20:
+                    if event.unicode in LGCHARS and len(Name) < 30:
                         Name += event.unicode
             
     pygame.display.update()
